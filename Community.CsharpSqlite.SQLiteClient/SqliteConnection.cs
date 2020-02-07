@@ -48,7 +48,6 @@ namespace Community.CsharpSqlite.SQLiteClient
     /// </remarks>
     public class SqliteConnection : DbConnection, ICloneable
     {
-
         #region Fields
 
         private string conn_str;
@@ -158,27 +157,19 @@ namespace Community.CsharpSqlite.SQLiteClient
 
         public int LastInsertRowId
         {
-            get
-            {
-                return (int)Sqlite3.sqlite3_last_insert_rowid(Handle2);
-            }
+            get { return (int)Sqlite3.sqlite3_last_insert_rowid(Handle2); }
         }
 
         public int BusyTimeout
         {
-            get
-            {
-                return db_BusyTimeout;
-            }
-            set
-            {
-                db_BusyTimeout = value < 0 ? 0 : value;
-            }
+            get { return db_BusyTimeout; }
+            set { db_BusyTimeout = value < 0 ? 0 : value; }
         }
 
         #endregion
 
         #region Private Methods
+
         private void SetConnectionString(string connstring)
         {
             if (connstring == null)
@@ -206,6 +197,7 @@ namespace Community.CsharpSqlite.SQLiteClient
                     {
                         throw new InvalidOperationException("Invalid connection string");
                     }
+
                     string token = piece.Substring(0, firstEqual);
                     string tvalue = piece.Remove(0, firstEqual + 1).Trim();
                     string tvalue_lc = tvalue.ToLower(System.Globalization.CultureInfo.InvariantCulture).Trim();
@@ -227,15 +219,16 @@ namespace Community.CsharpSqlite.SQLiteClient
 #if !(SQLITE_SILVERLIGHT || WINDOWS_MOBILE)
                             }
                             else if (tvalue_lc.StartsWith("|DataDirectory|",
-                                                           StringComparison.OrdinalIgnoreCase))
+                                StringComparison.OrdinalIgnoreCase))
                             {
                                 string filePath = String.Format("App_Data{0}{1}",
-                                                                   Path.DirectorySeparatorChar,
-                                                                   tvalue_lc.Substring(15));
+                                    Path.DirectorySeparatorChar,
+                                    tvalue_lc.Substring(15));
 
-                                // AppDomainSetup ads = AppDomain.CurrentDomain.SetupInformation;
-                                // db_file = Path.Combine(ads.ApplicationBase, filePath);
-                                db_file = Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, filePath);
+                                // string appBase = AppDomain.CurrentDomain.SetupInformation.ApplicationBase:
+                                string appBase = System.AppDomain.CurrentDomain.BaseDirectory;
+
+                                db_file = Path.Combine(appBase, filePath);
 #endif
                             }
                             else
@@ -246,10 +239,11 @@ namespace Community.CsharpSqlite.SQLiteClient
               db_file = tvalue;
 #endif
                             }
+
                             break;
 
                         case "mode": // Ignored for SQLite3.
-                                     ////int db_mode = Convert.ToInt32 (tvalue);
+                            ////int db_mode = Convert.ToInt32 (tvalue);
                             break;
 
                         case "version":
@@ -276,8 +270,10 @@ namespace Community.CsharpSqlite.SQLiteClient
                             break;
 
                         case "password":
-                            if (!string.IsNullOrEmpty(db_password) && (db_password.Length != 34 || !db_password.StartsWith("0x")))
-                                throw new InvalidOperationException("Invalid password string: must be 34 hex digits starting with 0x");
+                            if (!string.IsNullOrEmpty(db_password) &&
+                                (db_password.Length != 34 || !db_password.StartsWith("0x")))
+                                throw new InvalidOperationException(
+                                    "Invalid password string: must be 34 hex digits starting with 0x");
                             db_password = tvalue;
                             break;
                     }
@@ -309,6 +305,7 @@ namespace Community.CsharpSqlite.SQLiteClient
                 return false;
             throw new ArgumentException(string.Format("Invalid boolean value: \"{0}\"", value));
         }
+
         #endregion
 
         #region Internal Methods
@@ -427,6 +424,7 @@ namespace Community.CsharpSqlite.SQLiteClient
                     cmd.ExecuteNonQuery();
                 }
             }
+
             state = ConnectionState.Open;
         }
 
@@ -494,6 +492,7 @@ namespace Community.CsharpSqlite.SQLiteClient
         }
 
         static DataTable metaDataCollections = null;
+
         DataTable GetSchemaMetaDataCollections()
         {
             if (metaDataCollections != null)
@@ -548,11 +547,11 @@ namespace Community.CsharpSqlite.SQLiteClient
         DataTable GetSchemaTables(string[] restrictionValues)
         {
             SqliteCommand cmd = new SqliteCommand(
-                        "SELECT type, name, tbl_name, rootpage, sql " +
-                        " FROM sqlite_master " +
-                        " WHERE (name = :pname or (:pname is null)) " +
-                        " AND type = 'table' " +
-                        " ORDER BY name", this);
+                "SELECT type, name, tbl_name, rootpage, sql " +
+                " FROM sqlite_master " +
+                " WHERE (name = :pname or (:pname is null)) " +
+                " AND type = 'table' " +
+                " ORDER BY name", this);
             cmd.Parameters.Add("pname", DbType.String).Value = DBNull.Value;
             return GetSchemaDataTable(cmd, restrictionValues);
         }
@@ -563,6 +562,7 @@ namespace Community.CsharpSqlite.SQLiteClient
             {
                 throw new ArgumentException("Columns must contain at least one restriction value for the table name.");
             }
+
             ValidateIdentifier(restrictionValues[0]);
 
             SqliteCommand cmd = (SqliteCommand)CreateCommand();
@@ -573,11 +573,11 @@ namespace Community.CsharpSqlite.SQLiteClient
         DataTable GetSchemaTriggers(string[] restrictionValues)
         {
             SqliteCommand cmd = new SqliteCommand(
-                        "SELECT type, name, tbl_name, rootpage, sql " +
-                        " FROM sqlite_master " +
-                        " WHERE (tbl_name = :pname or :pname is null) " +
-                        " AND type = 'trigger' " +
-                        " ORDER BY name", this);
+                "SELECT type, name, tbl_name, rootpage, sql " +
+                " FROM sqlite_master " +
+                " WHERE (tbl_name = :pname or :pname is null) " +
+                " AND type = 'trigger' " +
+                " ORDER BY name", this);
             cmd.Parameters.Add("pname", DbType.String).Value = DBNull.Value;
             return GetSchemaDataTable(cmd, restrictionValues);
         }
@@ -586,8 +586,10 @@ namespace Community.CsharpSqlite.SQLiteClient
         {
             if (restrictionValues == null || restrictionValues.Length == 0)
             {
-                throw new ArgumentException("IndexColumns must contain at least one restriction value for the index name.");
+                throw new ArgumentException(
+                    "IndexColumns must contain at least one restriction value for the index name.");
             }
+
             ValidateIdentifier(restrictionValues[0]);
 
             SqliteCommand cmd = (SqliteCommand)CreateCommand();
@@ -601,6 +603,7 @@ namespace Community.CsharpSqlite.SQLiteClient
             {
                 throw new ArgumentException("Indexes must contain at least one restriction value for the table name.");
             }
+
             ValidateIdentifier(restrictionValues[0]);
 
             SqliteCommand cmd = (SqliteCommand)CreateCommand();
@@ -612,8 +615,10 @@ namespace Community.CsharpSqlite.SQLiteClient
         {
             if (restrictionValues == null || restrictionValues.Length == 0)
             {
-                throw new ArgumentException("Foreign Keys must contain at least one restriction value for the table name.");
+                throw new ArgumentException(
+                    "Foreign Keys must contain at least one restriction value for the table name.");
             }
+
             ValidateIdentifier(restrictionValues[0]);
 
             SqliteCommand cmd = (SqliteCommand)CreateCommand();
@@ -632,11 +637,11 @@ namespace Community.CsharpSqlite.SQLiteClient
         DataTable GetSchemaViews(string[] restrictionValues)
         {
             SqliteCommand cmd = new SqliteCommand(
-                        "SELECT type, name, tbl_name, rootpage, sql " +
-                        " FROM sqlite_master " +
-                        " WHERE (name = :pname or :pname is null) " +
-                        " AND type = 'view' " +
-                        " ORDER BY name", this);
+                "SELECT type, name, tbl_name, rootpage, sql " +
+                " FROM sqlite_master " +
+                " WHERE (name = :pname or :pname is null) " +
+                " AND type = 'view' " +
+                " ORDER BY name", this);
             cmd.Parameters.Add("pname", DbType.String).Value = DBNull.Value;
             return GetSchemaDataTable(cmd, restrictionValues);
         }
@@ -680,21 +685,24 @@ namespace Community.CsharpSqlite.SQLiteClient
 #endif
 
             // TODO: set correctly
-            dt.LoadDataRow(new object[] { "",
-                                "SQLite",
-                                ServerVersion,
-                                ServerVersion,
-                                3,
-                                "",
-                                1,
-                                false,
-                                "",
-                                "",
-                                30,
-                                "",
-                                2,
-                                DBNull.Value,
-                                "" },
+            dt.LoadDataRow(new object[]
+                {
+                    "",
+                    "SQLite",
+                    ServerVersion,
+                    ServerVersion,
+                    3,
+                    "",
+                    1,
+                    false,
+                    "",
+                    "",
+                    30,
+                    "",
+                    2,
+                    DBNull.Value,
+                    ""
+                },
                 true);
 
             return dt;
@@ -909,7 +917,7 @@ namespace Community.CsharpSqlite.SQLiteClient
             return dt;
         }
 #endif
-        #endregion
 
+        #endregion
     }
 }
