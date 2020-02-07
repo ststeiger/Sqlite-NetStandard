@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="xunit" Version="2.4.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Community.CsharpSqlite.Benchmark\Community.CsharpSqlite.Benchmark.csproj" />
+    <ProjectReference Include="..\Community.CsharpSqlite\Community.CsharpSqlite.csproj" />
+  </ItemGroup>
+
+</Project>
